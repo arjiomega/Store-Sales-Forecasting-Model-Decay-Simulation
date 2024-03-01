@@ -1,10 +1,11 @@
 from setuptools import find_packages, setup
 
 setup(
-    name='src',
-    packages=find_packages(),
-    version='0.1.0',
-    description='Simulating Model Decay in Store Sales Forecasting',
-    author='Richard Joseph Omega',
-    license='MIT',
+    name="Store_Sales_Forecasting_Model_Decay_Simulation",
+    packages=find_packages(exclude=["Store_Sales_Forecasting_Model_Decay_Simulation_tests"]),
+    install_requires=[
+        "dagster",
+        "dagster-cloud"
+    ],
+    extras_require={"dev": ["dagster-webserver", "pytest"]},
 )

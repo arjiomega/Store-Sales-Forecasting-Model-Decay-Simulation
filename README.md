@@ -1,57 +1,47 @@
-Store-Sales-Forecasting-Model-Decay-Simulation
-==============================
+# Store_Sales_Forecasting_Model_Decay_Simulation
 
-Simulating Model Decay in Store Sales Forecasting
+This is a [Dagster](https://dagster.io/) project scaffolded with [`dagster project scaffold`](https://docs.dagster.io/getting-started/create-new-project).
 
-Project Organization
-------------
+## Getting started
 
-    ├── LICENSE
-    ├── Makefile           <- Makefile with commands like `make data` or `make train`
-    ├── README.md          <- The top-level README for developers using this project.
-    ├── data
-    │   ├── external       <- Data from third party sources.
-    │   ├── interim        <- Intermediate data that has been transformed.
-    │   ├── processed      <- The final, canonical data sets for modeling.
-    │   └── raw            <- The original, immutable data dump.
-    │
-    ├── docs               <- A default Sphinx project; see sphinx-doc.org for details
-    │
-    ├── models             <- Trained and serialized models, model predictions, or model summaries
-    │
-    ├── notebooks          <- Jupyter notebooks. Naming convention is a number (for ordering),
-    │                         the creator's initials, and a short `-` delimited description, e.g.
-    │                         `1.0-jqp-initial-data-exploration`.
-    │
-    ├── references         <- Data dictionaries, manuals, and all other explanatory materials.
-    │
-    ├── reports            <- Generated analysis as HTML, PDF, LaTeX, etc.
-    │   └── figures        <- Generated graphics and figures to be used in reporting
-    │
-    ├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
-    │                         generated with `pip freeze > requirements.txt`
-    │
-    ├── setup.py           <- makes project pip installable (pip install -e .) so src can be imported
-    ├── src                <- Source code for use in this project.
-    │   ├── __init__.py    <- Makes src a Python module
-    │   │
-    │   ├── data           <- Scripts to download or generate data
-    │   │   └── make_dataset.py
-    │   │
-    │   ├── features       <- Scripts to turn raw data into features for modeling
-    │   │   └── build_features.py
-    │   │
-    │   ├── models         <- Scripts to train models and then use trained models to make
-    │   │   │                 predictions
-    │   │   ├── predict_model.py
-    │   │   └── train_model.py
-    │   │
-    │   └── visualization  <- Scripts to create exploratory and results oriented visualizations
-    │       └── visualize.py
-    │
-    └── tox.ini            <- tox file with settings for running tox; see tox.readthedocs.io
+First, install your Dagster code location as a Python package. By using the --editable flag, pip will install your Python package in ["editable mode"](https://pip.pypa.io/en/latest/topics/local-project-installs/#editable-installs) so that as you develop, local code changes will automatically apply.
 
+```bash
+pip install -e ".[dev]"
+```
 
---------
+Then, start the Dagster UI web server:
 
-<p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
+```bash
+dagster dev
+```
+
+Open http://localhost:3000 with your browser to see the project.
+
+You can start writing assets in `Store_Sales_Forecasting_Model_Decay_Simulation/assets.py`. The assets are automatically loaded into the Dagster code location as you define them.
+
+## Development
+
+### Adding new Python dependencies
+
+You can specify new Python dependencies in `setup.py`.
+
+### Unit testing
+
+Tests are in the `Store_Sales_Forecasting_Model_Decay_Simulation_tests` directory and you can run tests using `pytest`:
+
+```bash
+pytest Store_Sales_Forecasting_Model_Decay_Simulation_tests
+```
+
+### Schedules and sensors
+
+If you want to enable Dagster [Schedules](https://docs.dagster.io/concepts/partitions-schedules-sensors/schedules) or [Sensors](https://docs.dagster.io/concepts/partitions-schedules-sensors/sensors) for your jobs, the [Dagster Daemon](https://docs.dagster.io/deployment/dagster-daemon) process must be running. This is done automatically when you run `dagster dev`.
+
+Once your Dagster Daemon is running, you can start turning on schedules and sensors for your jobs.
+
+## Deploy on Dagster Cloud
+
+The easiest way to deploy your Dagster project is to use Dagster Cloud.
+
+Check out the [Dagster Cloud Documentation](https://docs.dagster.cloud) to learn more.
