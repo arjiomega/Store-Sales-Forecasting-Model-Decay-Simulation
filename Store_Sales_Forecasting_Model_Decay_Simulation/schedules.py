@@ -8,7 +8,7 @@ from dagster import (
 
 from .jobs import partitioned_load_data_job
 from .partitions import daily_partitions
-from .assets.core.load_data import load_store_sales_data
+from .assets.core.load_partitioned import load_partitioned
 
 
 def get_last_materialized_partition(context, asset) -> datetime:
@@ -33,7 +33,9 @@ def get_last_materialized_partition(context, asset) -> datetime:
     execution_timezone="Asia/Manila",
 )
 def update_frequency(context: ScheduleEvaluationContext):
-    schedule_partition = get_last_materialized_partition(context, load_store_sales_data)
+    schedule_partition = get_last_materialized_partition(
+        context, load_partitioned.load_store_sales_data
+    )
 
     last_date_partition = datetime.strptime(
         daily_partitions.get_last_partition_key(), "%Y-%m-%d"
