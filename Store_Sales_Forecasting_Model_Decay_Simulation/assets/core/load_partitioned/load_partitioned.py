@@ -7,7 +7,7 @@ from Store_Sales_Forecasting_Model_Decay_Simulation import config, partitions
 from Store_Sales_Forecasting_Model_Decay_Simulation.assets.core import utilities
 
 
-@asset(partitions_def=partitions.daily_partitions)
+@asset(partitions_def=partitions.partition)
 def load_store_sales_data(context: AssetExecutionContext) -> pd.DataFrame:
     """Load daily sales of a product family at a particular store including the number of products on promotion.
 
@@ -52,7 +52,7 @@ def load_store_sales_data(context: AssetExecutionContext) -> pd.DataFrame:
     return data_partition
 
 
-@asset(partitions_def=partitions.daily_partitions)
+@asset(partitions_def=partitions.partition)
 def load_oil_prices_data(
     context: AssetExecutionContext,
     load_store_sales_data: pd.DataFrame,
@@ -109,7 +109,7 @@ def load_oil_prices_data(
     return data_partition
 
 
-@asset(partitions_def=partitions.daily_partitions)
+@asset(partitions_def=partitions.partition)
 def load_transactions_data(context: AssetExecutionContext) -> pd.DataFrame:
     """Total transactions (all product families) of a store per day.
 
@@ -149,7 +149,7 @@ def load_transactions_data(context: AssetExecutionContext) -> pd.DataFrame:
     return data_partition
 
 
-@asset(partitions_def=partitions.daily_partitions)
+@asset(partitions_def=partitions.partition)
 def load_holidays_data(context: AssetExecutionContext) -> pd.DataFrame:
     """Load all the holidays in Ecuador (local, regional, national).
 
@@ -190,7 +190,7 @@ def load_holidays_data(context: AssetExecutionContext) -> pd.DataFrame:
     return data_partition
 
 
-@asset(partitions_def=partitions.daily_partitions)
+@asset(partitions_def=partitions.partition)
 def national_holidays_data(
     context: AssetExecutionContext, load_holidays_data: pd.DataFrame
 ) -> pd.DataFrame:
@@ -227,7 +227,7 @@ def national_holidays_data(
     return national_holiday_df
 
 
-@asset(partitions_def=partitions.daily_partitions)
+@asset(partitions_def=partitions.partition)
 def local_holidays_data(
     context: AssetExecutionContext, load_holidays_data: pd.DataFrame
 ) -> pd.DataFrame:
@@ -270,7 +270,7 @@ def local_holidays_data(
     return local_holiday_df
 
 
-@asset(partitions_def=partitions.daily_partitions)
+@asset(partitions_def=partitions.partition)
 def regional_holidays_data(
     context: AssetExecutionContext, load_holidays_data: pd.DataFrame
 ) -> pd.DataFrame:

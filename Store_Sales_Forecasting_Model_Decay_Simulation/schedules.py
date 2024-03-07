@@ -1,20 +1,42 @@
-from datetime import datetime, timedelta
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
 from dagster import (
-    schedule,
     ScheduleEvaluationContext,
+    AssetsDefinition,
     RunRequest,
+    schedule,
 )
 
-from .jobs import partitioned_load_data_job
-from .partitions import daily_partitions
 from .assets.core.load_partitioned import load_partitioned
+from .jobs import partitioned_load_data_job
+from .partitions import partition
 
 
-def get_last_materialized_partition(context, asset) -> datetime:
+
+def get_last_materialized_partition(
+    context: ScheduleEvaluationContext, 
+    asset: AssetsDefinition
+    ) -> datetime:
+    """Get the last materialized partition for a given asset.
+
+    Returns:
+        datetime: starting date for data partition
+        
+    WARNING:
+        Changing partitions definition will break this function.
+    """
     instance = context.instance
     asset_key = asset.key
-    materialized_partitions = instance.get_materialized_partitions(asset_key)
+
+    materialized_partitions = sorted(
+        instance.get_materialized_partitions(asset_key),
+        key=lambda x: datetime.strptime(x, "%Y-%m-%d"),
+    )
+
+    context.log.info(
+        f"Materialized partitions: {materialized_partitions}"
+    )
 
     DATA_START_DATE = datetime.strptime("2013-01-01", "%Y-%m-%d")
 
@@ -22,9 +44,9 @@ def get_last_materialized_partition(context, asset) -> datetime:
         return DATA_START_DATE
     else:
         previous_partition = datetime.strptime(
-            list(materialized_partitions)[-1], "%Y-%m-%d"
+            materialized_partitions[-1], "%Y-%m-%d"
         )
-        return previous_partition + timedelta(days=1)
+        return previous_partition + relativedelta(months=1)
 
 
 @schedule(
@@ -38,7 +60,7 @@ def update_frequency(context: ScheduleEvaluationContext):
     )
 
     last_date_partition = datetime.strptime(
-        daily_partitions.get_last_partition_key(), "%Y-%m-%d"
+        partition.get_last_partition_key(), "%Y-%m-%d"
     )
 
     context.log.info(f"schedule partition: {schedule_partition}")
