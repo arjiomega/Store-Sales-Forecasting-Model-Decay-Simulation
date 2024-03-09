@@ -23,7 +23,7 @@ def load_store_info_data(context: AssetExecutionContext) -> pd.DataFrame:
 
     Returns:
         pd.DataFrame: Dataframe containing store information
-        
+
     NOTE:
     Go to the asset in dagster UI and activate auto-materializing.
     """

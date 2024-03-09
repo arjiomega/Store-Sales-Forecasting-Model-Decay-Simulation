@@ -8,8 +8,8 @@ from datetime import datetime
 from dagster import MonthlyPartitionsDefinition
 
 partition = MonthlyPartitionsDefinition(
-    start_date=datetime(2013, 1, 1), 
-    end_date=datetime(2017, 9, 1), 
+    start_date=datetime(2013, 1, 1),
+    end_date=datetime(2017, 9, 1),
     timezone="Asia/Manila",
     end_offset=1,
 )

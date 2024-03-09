@@ -13,16 +13,14 @@ from .jobs import partitioned_load_data_job
 from .partitions import partition
 
 
-
 def get_last_materialized_partition(
-    context: ScheduleEvaluationContext, 
-    asset: AssetsDefinition
-    ) -> datetime:
+    context: ScheduleEvaluationContext, asset: AssetsDefinition
+) -> datetime:
     """Get the last materialized partition for a given asset.
 
     Returns:
         datetime: starting date for data partition
-        
+
     WARNING:
         Changing partitions definition will break this function.
     """
@@ -34,18 +32,14 @@ def get_last_materialized_partition(
         key=lambda x: datetime.strptime(x, "%Y-%m-%d"),
     )
 
-    context.log.info(
-        f"Materialized partitions: {materialized_partitions}"
-    )
+    context.log.info(f"Materialized partitions: {materialized_partitions}")
 
     DATA_START_DATE = datetime.strptime("2013-01-01", "%Y-%m-%d")
 
     if not materialized_partitions:
         return DATA_START_DATE
     else:
-        previous_partition = datetime.strptime(
-            materialized_partitions[-1], "%Y-%m-%d"
-        )
+        previous_partition = datetime.strptime(materialized_partitions[-1], "%Y-%m-%d")
         return previous_partition + relativedelta(months=1)
 
 

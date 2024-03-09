@@ -1,14 +1,24 @@
 from pathlib import Path
 
 import pandas as pd
+from dagster_snowflake import SnowflakeResource
 from dagster import MetadataValue, AssetExecutionContext, asset
 
 from Store_Sales_Forecasting_Model_Decay_Simulation import config, partitions
-from Store_Sales_Forecasting_Model_Decay_Simulation.assets.core import utilities
+from Store_Sales_Forecasting_Model_Decay_Simulation.assets.core import (
+    utilities,
+    create_tables,
+)
 
 
-@asset(partitions_def=partitions.partition)
-def load_store_sales_data(context: AssetExecutionContext) -> pd.DataFrame:
+@asset(
+    partitions_def=partitions.partition,
+    metadata={"partition_expr": "date"},
+    io_manager_key="io_manager",
+)
+def store_sales(
+    context: AssetExecutionContext, snowflake_resource: SnowflakeResource
+) -> pd.DataFrame:
     """Load daily sales of a product family at a particular store including the number of products on promotion.
 
     Data format:
@@ -29,6 +39,11 @@ def load_store_sales_data(context: AssetExecutionContext) -> pd.DataFrame:
     Returns:
         pd.DataFrame - The data partition extracted from the input DataFrame.
     """
+
+    # Create table if it does not exist
+    create_tables.create_table(
+        snowflake_resource=snowflake_resource, table_name="store_sales"
+    )
 
     store_sales_data_path = Path(config.RAW_DATA_DIR, "train.csv")
     store_sales_data_df = pd.read_csv(
@@ -52,10 +67,11 @@ def load_store_sales_data(context: AssetExecutionContext) -> pd.DataFrame:
     return data_partition
 
 
-@asset(partitions_def=partitions.partition)
-def load_oil_prices_data(
+@asset(partitions_def=partitions.partition, metadata={"partition_expr": "date"})
+def oil_prices(
     context: AssetExecutionContext,
-    load_store_sales_data: pd.DataFrame,
+    snowflake_resource: SnowflakeResource,
+    store_sales: pd.DataFrame,
 ) -> pd.DataFrame:
     """Load changes in oil prices per day in Ecuador.
 
@@ -66,27 +82,28 @@ def load_oil_prices_data(
 
     Args:
         context: AssetExecutionContext - The context containing the time window for the data partition.
-        load_store_sales_data (pd.DataFrame): partitioned store sales data.
+        store_sales (pd.DataFrame): partitioned store sales data.
 
     Returns:
         pd.DataFrame - The data partition extracted from the input DataFrame.
     """
+
+    # Create table if it does not exist
+    create_tables.create_table(
+        snowflake_resource=snowflake_resource, table_name="oil_prices"
+    )
 
     oil_data_path = Path(config.RAW_DATA_DIR, "oil.csv")
     oil_data_df = pd.read_csv(oil_data_path, parse_dates=["date"])
 
     data_partition = utilities.get_data_partition(context, oil_data_df)
 
-    # lets see dates from load_store_sales_data that are not in oil_data_df
-    oil_data_missing_dates = load_store_sales_data[
-        ~load_store_sales_data.date.isin(data_partition.date)
-    ]
+    # lets see dates from store_sales that are not in oil_data_df
+    oil_data_missing_dates = store_sales[~store_sales.date.isin(data_partition.date)]
 
     number_of_missing_rows_from_main = len(oil_data_missing_dates)
     number_of_missing_dates_from_main = len(
-        load_store_sales_data[
-            ~load_store_sales_data.date.isin(data_partition.date)
-        ].date.unique()
+        store_sales[~store_sales.date.isin(data_partition.date)].date.unique()
     )
 
     context.add_output_metadata(
@@ -109,8 +126,10 @@ def load_oil_prices_data(
     return data_partition
 
 
-@asset(partitions_def=partitions.partition)
-def load_transactions_data(context: AssetExecutionContext) -> pd.DataFrame:
+@asset(partitions_def=partitions.partition, metadata={"partition_expr": "date"})
+def transactions(
+    context: AssetExecutionContext, snowflake_resource: SnowflakeResource
+) -> pd.DataFrame:
     """Total transactions (all product families) of a store per day.
 
     Data format:
@@ -128,6 +147,11 @@ def load_transactions_data(context: AssetExecutionContext) -> pd.DataFrame:
     NOTE: Will be excluded from preprocessing since forecasting will be done
     separately on each family product and store.
     """
+
+    # Create table if it does not exist
+    create_tables.create_table(
+        snowflake_resource=snowflake_resource, table_name="transactions"
+    )
 
     transactions_data_path = Path(config.RAW_DATA_DIR, "transactions.csv")
     transactions_data_df = pd.read_csv(transactions_data_path, parse_dates=["date"])
@@ -149,14 +173,16 @@ def load_transactions_data(context: AssetExecutionContext) -> pd.DataFrame:
     return data_partition
 
 
-@asset(partitions_def=partitions.partition)
-def load_holidays_data(context: AssetExecutionContext) -> pd.DataFrame:
+@asset(partitions_def=partitions.partition, metadata={"partition_expr": "date"})
+def holidays(
+    context: AssetExecutionContext, snowflake_resource: SnowflakeResource
+) -> pd.DataFrame:
     """Load all the holidays in Ecuador (local, regional, national).
 
     Data format:
     id: int (ex. 1)
     date: datetime (ex. 2012-03-02)
-    type: str (ex. Holiday) -   Type of the holiday. Holiday or Transfer. 
+    type: str (ex. Holiday) -   Type of the holiday. Holiday or Transfer.
                                 Some holidays are moved to different date.
     locale: str (ex. Local) - Scale of the holiday. [Local, Regional, National]
     locale_name: str (ex. "Manta") - City or State depending on the locale.
@@ -169,7 +195,12 @@ def load_holidays_data(context: AssetExecutionContext) -> pd.DataFrame:
     Returns:
         pd.DataFrame - The data partition extracted from the input DataFrame.
     """
-    
+
+    # Create table if it does not exist
+    create_tables.create_table(
+        snowflake_resource=snowflake_resource, table_name="holidays"
+    )
+
     holidays_data_path = Path(config.RAW_DATA_DIR, "holidays_events.csv")
     holidays_data_df = pd.read_csv(holidays_data_path, parse_dates=["date"])
 
@@ -190,22 +221,27 @@ def load_holidays_data(context: AssetExecutionContext) -> pd.DataFrame:
     return data_partition
 
 
-@asset(partitions_def=partitions.partition)
-def national_holidays_data(
-    context: AssetExecutionContext, load_holidays_data: pd.DataFrame
+@asset(partitions_def=partitions.partition, metadata={"partition_expr": "date"})
+def national_holidays(
+    context: AssetExecutionContext,
+    snowflake_resource: SnowflakeResource,
+    holidays: pd.DataFrame,
 ) -> pd.DataFrame:
-    """Extract only national holidays from load_holidays_data.
+    """Extract only national holidays from holidays.
 
     Args:
-        load_holidays_data (pd.DataFrame): Partitioned holidays data.
+        holidays (pd.DataFrame): Partitioned holidays data.
 
     Returns:
         national_holiday_df (pd.DataFrame): Partitioned holidays data containing only national holidays.
     """
 
-    national_holiday_df = load_holidays_data[
-        load_holidays_data.locale == "National"
-    ].copy()
+    # Create table if it does not exist
+    create_tables.create_table(
+        snowflake_resource=snowflake_resource, table_name="national_holidays"
+    )
+
+    national_holiday_df = holidays[holidays.locale == "National"].copy()
     national_holiday_df.drop(
         columns=["type", "locale", "locale_name", "description", "transferred"],
         inplace=True,
@@ -227,20 +263,27 @@ def national_holidays_data(
     return national_holiday_df
 
 
-@asset(partitions_def=partitions.partition)
-def local_holidays_data(
-    context: AssetExecutionContext, load_holidays_data: pd.DataFrame
+@asset(partitions_def=partitions.partition, metadata={"partition_expr": "date"})
+def local_holidays(
+    context: AssetExecutionContext,
+    snowflake_resource: SnowflakeResource,
+    holidays: pd.DataFrame,
 ) -> pd.DataFrame:
-    """Extract only local holidays from load_holidays_data.
+    """Extract only local holidays from holidays.
 
     Args:
-        load_holidays_data (pd.DataFrame): Partitioned holidays data.
+        holidays (pd.DataFrame): Partitioned holidays data.
 
     Returns:
         local_holiday_df (pd.DataFrame): Partitioned holidays data containing only local holidays.
     """
 
-    local_holiday_df = load_holidays_data[load_holidays_data.locale == "Local"].copy()
+    # Create table if it does not exist
+    create_tables.create_table(
+        snowflake_resource=snowflake_resource, table_name="local_holidays"
+    )
+
+    local_holiday_df = holidays[holidays.locale == "Local"].copy()
 
     # Drop unnecessary columns
     local_holiday_df.drop(
@@ -270,22 +313,27 @@ def local_holidays_data(
     return local_holiday_df
 
 
-@asset(partitions_def=partitions.partition)
-def regional_holidays_data(
-    context: AssetExecutionContext, load_holidays_data: pd.DataFrame
+@asset(partitions_def=partitions.partition, metadata={"partition_expr": "date"})
+def regional_holidays(
+    context: AssetExecutionContext,
+    snowflake_resource: SnowflakeResource,
+    holidays: pd.DataFrame,
 ) -> pd.DataFrame:
-    """Extract only regional holidays from load_holidays_data.
+    """Extract only regional holidays from holidays.
 
     Args:
-        load_holidays_data (pd.DataFrame): Partitioned holidays data.
+        holidays (pd.DataFrame): Partitioned holidays data.
 
     Returns:
         regional_holiday_df (pd.DataFrame): Partitioned holidays data containing only regional holidays.
     """
 
-    regional_holiday_df = load_holidays_data[
-        load_holidays_data.locale == "Regional"
-    ].copy()
+    # Create table if it does not exist
+    create_tables.create_table(
+        snowflake_resource=snowflake_resource, table_name="regional_holidays"
+    )
+
+    regional_holiday_df = holidays[holidays.locale == "Regional"].copy()
 
     # Drop unnecessary columns
     regional_holiday_df.drop(

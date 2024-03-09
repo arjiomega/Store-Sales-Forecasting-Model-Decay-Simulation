@@ -18,6 +18,15 @@ Install the project including the dependencies:
 pip install -e ".[dev]"
 ```
 
+Prepare environment variables by creating .env file:
+```env
+DAGSTER_HOME=<path to project>
+SNOWFLAKE_USER=<snowflake user>
+SNOWFLAKE_PASSWORD=<snowflake password>
+SNOWFLAKE_ACCOUNT=<snowflake account>
+```
+> For the snowflake credentials, follow the instructions here: [dagster snowflake integration guide](https://docs.dagster.io/integrations/snowflake/using-snowflake-with-dagster)
+
 Start Dagster UI Server
 ```bash
 dagster dev
