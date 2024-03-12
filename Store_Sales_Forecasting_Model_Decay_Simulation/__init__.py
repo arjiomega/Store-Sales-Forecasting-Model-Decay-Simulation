@@ -6,10 +6,13 @@ from dagster_snowflake import SnowflakeIOManager, SnowflakeResource
 from dagster_snowflake_pandas import SnowflakePandasTypeHandler
 from dagster_snowflake_pyspark import SnowflakePySparkTypeHandler
 
-from .assets import core_assets
+from .assets import core_assets, forecasting_assets
 from .schedules import update_frequency
 
-all_assets = [*core_assets]
+from .assets.forecasting.forecasting import store_sales_sensor
+
+all_assets = [*core_assets, *forecasting_assets]
+all_sensors = [store_sales_sensor]
 
 
 class SnowflakePandasPySparkIOManager(SnowflakeIOManager):
@@ -54,4 +57,5 @@ defs = Definitions(
     assets=all_assets,
     resources={"io_manager": io_manager, "snowflake_resource": snowflake_resource},
     schedules=[update_frequency],
+    sensors=all_sensors,
 )

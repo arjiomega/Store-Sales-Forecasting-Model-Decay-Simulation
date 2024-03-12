@@ -52,6 +52,16 @@ def store_sales(
 
     data_partition = utilities.get_data_partition(context, store_sales_data_df)
 
+    data_partition = data_partition.astype(
+        {
+            "date": "datetime64[ns]",
+            "store_nbr": "int64",
+            "family": "string",
+            "sales": "float64",
+            "onpromotion": "int64",
+        }
+    )
+
     context.add_output_metadata(
         metadata={
             "date partition range": MetadataValue.md(
@@ -97,6 +107,13 @@ def oil_prices(
     oil_data_df = pd.read_csv(oil_data_path, parse_dates=["date"])
 
     data_partition = utilities.get_data_partition(context, oil_data_df)
+
+    data_partition = data_partition.astype(
+        {
+            "date": "datetime64[ns]",
+            "dcoilwtico": "float64",
+        }
+    )
 
     # lets see dates from store_sales that are not in oil_data_df
     oil_data_missing_dates = store_sales[~store_sales.date.isin(data_partition.date)]
@@ -158,6 +175,14 @@ def transactions(
 
     data_partition = utilities.get_data_partition(context, transactions_data_df)
 
+    data_partition = data_partition.astype(
+        {
+            "date": "datetime64[ns]",
+            "store_nbr": "int64",
+            "transactions": "int64",
+        }
+    )
+
     context.add_output_metadata(
         metadata={
             "date partition range": MetadataValue.md(
@@ -206,6 +231,17 @@ def holidays(
 
     data_partition = utilities.get_data_partition(context, holidays_data_df)
 
+    data_partition = data_partition.astype(
+        {
+            "date": "datetime64[ns]",
+            "type": "string",
+            "locale": "string",
+            "locale_name": "string",
+            "description": "string",
+            "transferred": "bool",
+        }
+    )
+
     context.add_output_metadata(
         metadata={
             "date partition range": MetadataValue.md(
@@ -228,6 +264,11 @@ def national_holidays(
     holidays: pd.DataFrame,
 ) -> pd.DataFrame:
     """Extract only national holidays from holidays.
+
+    Data format:
+    id: int (ex. 1)
+    date: datetime (ex. 2012-03-02)
+    national_holiday: int (ex. 1)
 
     Args:
         holidays (pd.DataFrame): Partitioned holidays data.
@@ -260,6 +301,13 @@ def national_holidays(
         }
     )
 
+    national_holiday_df = national_holiday_df.astype(
+        {
+            "date": "datetime64[ns]",
+            "national_holiday": "int64",
+        }
+    )
+
     return national_holiday_df
 
 
@@ -270,6 +318,12 @@ def local_holidays(
     holidays: pd.DataFrame,
 ) -> pd.DataFrame:
     """Extract only local holidays from holidays.
+
+    Data format:
+    id: int (ex. 1)
+    date: datetime (ex. 2012-03-02)
+    city: str (ex. Quito)
+    local_holiday: int (ex. 1)
 
     Args:
         holidays (pd.DataFrame): Partitioned holidays data.
@@ -310,6 +364,14 @@ def local_holidays(
         }
     )
 
+    local_holiday_df = local_holiday_df.astype(
+        {
+            "date": "datetime64[ns]",
+            "city": "string",
+            "local_holiday": "int64",
+        }
+    )
+
     return local_holiday_df
 
 
@@ -320,6 +382,12 @@ def regional_holidays(
     holidays: pd.DataFrame,
 ) -> pd.DataFrame:
     """Extract only regional holidays from holidays.
+
+    Data format:
+    id: int (ex. 1)
+    date: datetime (ex. 2012-03-02)
+    state: str (ex. Pichincha)
+    regional_holiday: int (ex. 1)
 
     Args:
         holidays (pd.DataFrame): Partitioned holidays data.
@@ -357,6 +425,14 @@ def regional_holidays(
                 regional_holiday_df.head().to_markdown()
             ),
             "nulls": MetadataValue.md(regional_holiday_df.isnull().sum().to_markdown()),
+        }
+    )
+
+    regional_holiday_df = regional_holiday_df.astype(
+        {
+            "date": "datetime64[ns]",
+            "state": "string",
+            "regional_holiday": "int64",
         }
     )
 

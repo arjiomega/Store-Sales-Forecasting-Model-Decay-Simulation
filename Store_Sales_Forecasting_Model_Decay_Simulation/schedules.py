@@ -50,7 +50,7 @@ def get_last_materialized_partition(
 )
 def update_frequency(context: ScheduleEvaluationContext):
     schedule_partition = get_last_materialized_partition(
-        context, load_partitioned.load_store_sales_data
+        context, load_partitioned.store_sales
     )
 
     last_date_partition = datetime.strptime(

@@ -1,13 +1,17 @@
 from pathlib import Path
 
 import pandas as pd
+from dagster_snowflake import SnowflakeResource
 from dagster import asset, MetadataValue, AssetExecutionContext, AutoMaterializePolicy
 
 from Store_Sales_Forecasting_Model_Decay_Simulation import config
+from Store_Sales_Forecasting_Model_Decay_Simulation.assets.core import create_tables
 
 
 @asset(auto_materialize_policy=AutoMaterializePolicy.eager())
-def load_store_info_data(context: AssetExecutionContext) -> pd.DataFrame:
+def store_info(
+    context: AssetExecutionContext, snowflake_resource: SnowflakeResource
+) -> pd.DataFrame:
     """load stores' location information.
 
     Data format:
@@ -27,6 +31,11 @@ def load_store_info_data(context: AssetExecutionContext) -> pd.DataFrame:
     NOTE:
     Go to the asset in dagster UI and activate auto-materializing.
     """
+
+    # Create table if it does not exist
+    create_tables.create_table(
+        snowflake_resource=snowflake_resource, table_name="store_info"
+    )
 
     store_info_data_path = Path(config.RAW_DATA_DIR, "stores.csv")
     store_info_data_df = pd.read_csv(store_info_data_path)

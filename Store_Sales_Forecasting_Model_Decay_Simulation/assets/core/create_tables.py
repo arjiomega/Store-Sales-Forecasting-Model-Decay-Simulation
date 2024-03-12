@@ -10,8 +10,8 @@ def get_table_creation_query(table_name: str) -> str:
                             STORE_SALES_DB.STORE_SALES_SCHEMA.STORE_INFO (
                                 ID INT,
                                 STORE_NBR INT,
-                                CITY VARCHAR(20),
-                                STATE VARCHAR(20),
+                                CITY VARCHAR(50),
+                                STATE VARCHAR(50),
                                 TYPE VARCHAR(5),
                                 CLUSTER INT
                             );

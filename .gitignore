@@ -7,7 +7,8 @@ __pycache__/
 *.so
 
 # Dagster
-.telemetry
+.telemetry/
+.nux/
 storage/
 
 # Distribution / packaging
