@@ -2,13 +2,11 @@
 
 Welcome to the Store Sales Forecasting Model Decay Simulation Project! 
 
-**Objectives**
-1. **Simulate incoming daily data using dagster**
-    - Implement schedule that triggers the loading of data partition (daily/weekly/etc.) every other minute or what is specified in the crons schedule.
-2. **Detect Data Drift**
-    - Use evidently ai to detect data drift.
-3. **Model Retraining**
-    - Implement sensors that are activated upon the detection of data drift and/or model drift. These sensors trigger the retraining process, ensuring that the forecasting model adapts to the evolving patterns in the data. The automated retraining strategy helps maintain the model's accuracy over time.
+![img](https://i.imgur.com/7RGYPhE.png)
+
+This project's primary objectives are to simulate incoming monthly data, detect data drift, and trigger model retraining. 
+
+To simulate incoming daily data, the project uses a schedule that triggers the loading of data partitioned monthly every other minute or what is specified in the crons schedule. The data is then merged with static data (unpartitioned). After that, the model will be trained if there is no model yet to measure reports. If there is a model, the new data will be used to measure the model performance, data drift, and model drift. Depending on the outcome of the report, the project will trigger the retraining process.
 
 
 ## Setup

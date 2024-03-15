@@ -12,6 +12,9 @@ setup(
         "dagster-snowflake-pandas==0.22.7",
         "dagster-snowflake-pyspark==0.22.7",
         "pandas==2.2.1",
+        "scikit-learn==1.4.0",
+        "matplotlib==3.8.3",
+        "xgboost==2.0.3",
     ],
     extras_require={
         "dev": ["dagster-webserver==1.6.7", "pytest==8.0.2", "black==24.2.0"]

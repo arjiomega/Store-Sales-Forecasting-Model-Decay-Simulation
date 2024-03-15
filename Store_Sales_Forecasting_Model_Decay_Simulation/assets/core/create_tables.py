@@ -8,7 +8,6 @@ def get_table_creation_query(table_name: str) -> str:
             "store_info": """
                             CREATE TABLE IF NOT EXISTS 
                             STORE_SALES_DB.STORE_SALES_SCHEMA.STORE_INFO (
-                                ID INT,
                                 STORE_NBR INT,
                                 CITY VARCHAR(50),
                                 STATE VARCHAR(50),
@@ -30,7 +29,7 @@ def get_table_creation_query(table_name: str) -> str:
                             CREATE TABLE IF NOT EXISTS 
                             STORE_SALES_DB.STORE_SALES_SCHEMA.OIL_PRICES (
                                 DATE TIMESTAMP_NTZ,
-                                DCOILWTICO FLOAT
+                                OIL_PRICE FLOAT
                             );
                             """,
             "transactions": """
@@ -75,6 +74,24 @@ def get_table_creation_query(table_name: str) -> str:
                                         REGIONAL_HOLIDAY BOOLEAN
                                     );
                                     """,
+            "combined_data": """
+                                    CREATE TABLE IF NOT EXISTS
+                                    STORE_SALES_DB.STORE_SALES_SCHEMA.COMBINED_DATA (
+                                    DATE TIMESTAMP_NTZ,
+                                    STORE_NBR INT,
+                                    FAMILY VARCHAR(50),
+                                    SALES FLOAT,
+                                    ONPROMOTION NUMBER(38,0),
+                                    OIL_PRICE FLOAT,
+                                    CITY VARCHAR(50),
+                                    STATE VARCHAR(50),
+                                    TYPE VARCHAR(10),
+                                    CLUSTER INT,
+                                    NATIONAL_HOLIDAY BOOLEAN,
+                                    LOCAL_HOLIDAY BOOLEAN,
+                                    REGIONAL_HOLIDAY BOOLEAN
+                                    );
+                                """,
         }[table_name]
     except KeyError:
         raise ValueError(f"Invalid table name: {table_name}")

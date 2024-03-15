@@ -88,7 +88,7 @@ def oil_prices(
     Data format:
     id: int (ex. 1)
     date: datetime (ex. 2013-01-02)
-    dcoilwtico: float (ex. 93.14) - oil price.
+    oil_price: float (ex. 93.14)
 
     Args:
         context: AssetExecutionContext - The context containing the time window for the data partition.
@@ -105,13 +105,14 @@ def oil_prices(
 
     oil_data_path = Path(config.RAW_DATA_DIR, "oil.csv")
     oil_data_df = pd.read_csv(oil_data_path, parse_dates=["date"])
+    oil_data_df.rename(columns={"dcoilwtico": "oil_price"}, inplace=True)
 
     data_partition = utilities.get_data_partition(context, oil_data_df)
 
     data_partition = data_partition.astype(
         {
             "date": "datetime64[ns]",
-            "dcoilwtico": "float64",
+            "oil_price": "float64",
         }
     )
 
@@ -268,7 +269,7 @@ def national_holidays(
     Data format:
     id: int (ex. 1)
     date: datetime (ex. 2012-03-02)
-    national_holiday: int (ex. 1)
+    national_holiday: bool (ex. True)
 
     Args:
         holidays (pd.DataFrame): Partitioned holidays data.
@@ -287,7 +288,7 @@ def national_holidays(
         columns=["type", "locale", "locale_name", "description", "transferred"],
         inplace=True,
     )
-    national_holiday_df["national_holiday"] = 1
+    national_holiday_df["national_holiday"] = True
 
     context.add_output_metadata(
         metadata={
@@ -304,7 +305,7 @@ def national_holidays(
     national_holiday_df = national_holiday_df.astype(
         {
             "date": "datetime64[ns]",
-            "national_holiday": "int64",
+            "national_holiday": "bool",
         }
     )
 
@@ -323,7 +324,7 @@ def local_holidays(
     id: int (ex. 1)
     date: datetime (ex. 2012-03-02)
     city: str (ex. Quito)
-    local_holiday: int (ex. 1)
+    local_holiday: bool (ex. True)
 
     Args:
         holidays (pd.DataFrame): Partitioned holidays data.
@@ -350,7 +351,7 @@ def local_holidays(
     # Drop the duplicate
     local_holiday_df.drop_duplicates(inplace=True)
 
-    local_holiday_df["local_holiday"] = 1
+    local_holiday_df["local_holiday"] = True
 
     context.add_output_metadata(
         metadata={
@@ -368,7 +369,7 @@ def local_holidays(
         {
             "date": "datetime64[ns]",
             "city": "string",
-            "local_holiday": "int64",
+            "local_holiday": "bool",
         }
     )
 
@@ -387,7 +388,7 @@ def regional_holidays(
     id: int (ex. 1)
     date: datetime (ex. 2012-03-02)
     state: str (ex. Pichincha)
-    regional_holiday: int (ex. 1)
+    regional_holiday: bool (ex. True)
 
     Args:
         holidays (pd.DataFrame): Partitioned holidays data.
@@ -414,7 +415,7 @@ def regional_holidays(
     # Drop the duplicate
     regional_holiday_df.drop_duplicates(inplace=True)
 
-    regional_holiday_df["regional_holiday"] = 1
+    regional_holiday_df["regional_holiday"] = True
 
     context.add_output_metadata(
         metadata={
@@ -432,7 +433,7 @@ def regional_holidays(
         {
             "date": "datetime64[ns]",
             "state": "string",
-            "regional_holiday": "int64",
+            "regional_holiday": "bool",
         }
     )
 
