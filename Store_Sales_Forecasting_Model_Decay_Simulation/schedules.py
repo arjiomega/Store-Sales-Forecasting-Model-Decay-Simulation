@@ -8,9 +8,9 @@ from dagster import (
     schedule,
 )
 
-from .assets.core.load_partitioned import load_partitioned
-from .jobs import partitioned_load_data_job
 from .partitions import partition
+from .assets.core import partitioned_assets
+from .jobs import partitioned_load_data_job
 
 
 def get_last_materialized_partition(
@@ -48,9 +48,11 @@ def get_last_materialized_partition(
     cron_schedule="*/1 * * * *",
     execution_timezone="Asia/Manila",
 )
-def update_frequency(context: ScheduleEvaluationContext):
+def rush_update_frequency(context: ScheduleEvaluationContext):
+    """Load monthly partitioned data every minute until 2015-01-01."""
+
     schedule_partition = get_last_materialized_partition(
-        context, load_partitioned.store_sales
+        context, partitioned_assets.store_sales
     )
 
     last_date_partition = datetime.strptime(
@@ -60,7 +62,36 @@ def update_frequency(context: ScheduleEvaluationContext):
     context.log.info(f"schedule partition: {schedule_partition}")
     context.log.info(f"last_date_partition: {last_date_partition}")
 
-    if schedule_partition <= last_date_partition:
+    if schedule_partition <= datetime.strptime("2015-01-01", "%Y-%m-%d"):
+        return RunRequest(
+            run_key=None, partition_key=schedule_partition.strftime("%Y-%m-%d")
+        )
+
+
+@schedule(
+    job=partitioned_load_data_job,
+    cron_schedule="*/3 * * * *",
+    execution_timezone="Asia/Manila",
+)
+def update_frequency(context: ScheduleEvaluationContext):
+    """Load monthly partitioned data every 5 minutes starting from 2015-01-02 onwards."""
+
+    schedule_partition = get_last_materialized_partition(
+        context, partitioned_assets.store_sales
+    )
+
+    last_date_partition = datetime.strptime(
+        partition.get_last_partition_key(), "%Y-%m-%d"
+    )
+
+    context.log.info(f"schedule partition: {schedule_partition}")
+    context.log.info(f"last_date_partition: {last_date_partition}")
+
+    if (
+        datetime.strptime("2015-01-01", "%Y-%m-%d")
+        < schedule_partition
+        <= last_date_partition
+    ):
         return RunRequest(
             run_key=None, partition_key=schedule_partition.strftime("%Y-%m-%d")
         )
