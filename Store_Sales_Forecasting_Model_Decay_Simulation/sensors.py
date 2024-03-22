@@ -68,7 +68,6 @@ def combined_data_sensor(
     """Sensor that triggers when the combined_data asset changes."""
 
     if asset_event.dagster_event and asset_event.dagster_event.asset_key:
-        context.advance_all_cursors()
         return RunRequest()
     else:
         return SkipReason(f"Data not yet materialized.")
