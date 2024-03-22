@@ -1,19 +1,25 @@
-from dagster import load_assets_from_package_module
+from dagster import load_assets_from_package_module, load_assets_from_modules
 
-from . import core, forecasting
+from . import forecasting, reports
+from .core import partitioned_assets, static_assets, segmented_assets
 
-from .core import load_partitioned
 
+partitioned_assets_ = load_assets_from_modules(
+    modules=[partitioned_assets], group_name="partitioned_assets"
+)
 
-CORE = "core"
-FORECASTING = "forecasting"
+static_assets_ = load_assets_from_modules(
+    modules=[static_assets], group_name="static_assets"
+)
 
-core_assets = load_assets_from_package_module(package_module=core, group_name=CORE)
-
-core_partitioned_assets = load_assets_from_package_module(
-    package_module=load_partitioned, group_name="partitioned_core"
+segmented_assets_ = load_assets_from_modules(
+    modules=[segmented_assets], group_name="segmented_assets"
 )
 
 forecasting_assets = load_assets_from_package_module(
-    package_module=forecasting, group_name=FORECASTING
+    package_module=forecasting, group_name="forecasting"
+)
+
+reports_assets = load_assets_from_package_module(
+    package_module=reports, group_name="reports"
 )
