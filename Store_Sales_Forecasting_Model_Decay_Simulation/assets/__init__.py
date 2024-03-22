@@ -1,6 +1,6 @@
 from dagster import load_assets_from_package_module, load_assets_from_modules
 
-from . import forecasting, reports
+from . import forecasting
 from .core import partitioned_assets, static_assets, segmented_assets
 
 
@@ -18,8 +18,4 @@ segmented_assets_ = load_assets_from_modules(
 
 forecasting_assets = load_assets_from_package_module(
     package_module=forecasting, group_name="forecasting"
-)
-
-reports_assets = load_assets_from_package_module(
-    package_module=reports, group_name="reports"
 )

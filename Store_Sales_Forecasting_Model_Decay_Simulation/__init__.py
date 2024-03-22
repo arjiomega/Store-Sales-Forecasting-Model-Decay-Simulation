@@ -13,7 +13,6 @@ all_assets = [
     *assets.static_assets_,
     *assets.segmented_assets_,
     *assets.forecasting_assets,
-    *assets.reports_assets,
 ]
 all_sensors = [
     sensors.store_sales_sensor,
