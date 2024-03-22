@@ -15,6 +15,7 @@ setup(
         "scikit-learn==1.4.0",
         "matplotlib==3.8.3",
         "xgboost==2.0.3",
+        "evidently==0.4.17",
     ],
     extras_require={
         "dev": ["dagster-webserver==1.6.7", "pytest==8.0.2", "black==24.2.0"]
