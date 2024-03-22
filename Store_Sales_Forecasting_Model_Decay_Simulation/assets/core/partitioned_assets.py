@@ -4,9 +4,9 @@ import pandas as pd
 from dagster_snowflake import SnowflakeResource
 from dagster import MetadataValue, AssetExecutionContext, asset
 
+from Store_Sales_Forecasting_Model_Decay_Simulation.utils import data_utils
 from Store_Sales_Forecasting_Model_Decay_Simulation import config, partitions
 from Store_Sales_Forecasting_Model_Decay_Simulation.assets.core import (
-    utilities,
     create_tables,
 )
 
@@ -50,7 +50,7 @@ def store_sales(
         store_sales_data_path, index_col="id", parse_dates=["date"]
     )
 
-    data_partition = utilities.get_data_partition(context, store_sales_data_df)
+    data_partition = data_utils.get_data_partition(context, store_sales_data_df)
 
     data_partition = data_partition.astype(
         {
@@ -107,7 +107,7 @@ def oil_prices(
     oil_data_df = pd.read_csv(oil_data_path, parse_dates=["date"])
     oil_data_df.rename(columns={"dcoilwtico": "oil_price"}, inplace=True)
 
-    data_partition = utilities.get_data_partition(context, oil_data_df)
+    data_partition = data_utils.get_data_partition(context, oil_data_df)
 
     data_partition = data_partition.astype(
         {
@@ -174,7 +174,7 @@ def transactions(
     transactions_data_path = Path(config.RAW_DATA_DIR, "transactions.csv")
     transactions_data_df = pd.read_csv(transactions_data_path, parse_dates=["date"])
 
-    data_partition = utilities.get_data_partition(context, transactions_data_df)
+    data_partition = data_utils.get_data_partition(context, transactions_data_df)
 
     data_partition = data_partition.astype(
         {
@@ -230,7 +230,7 @@ def holidays(
     holidays_data_path = Path(config.RAW_DATA_DIR, "holidays_events.csv")
     holidays_data_df = pd.read_csv(holidays_data_path, parse_dates=["date"])
 
-    data_partition = utilities.get_data_partition(context, holidays_data_df)
+    data_partition = data_utils.get_data_partition(context, holidays_data_df)
 
     data_partition = data_partition.astype(
         {

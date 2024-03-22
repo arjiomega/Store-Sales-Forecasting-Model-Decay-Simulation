@@ -14,9 +14,10 @@ from evidently.report import Report
 from evidently.metrics import RegressionQualityMetric
 from evidently.metric_preset import DataDriftPreset, TargetDriftPreset, RegressionPreset
 
-
-from . import visualization_utils
-from Store_Sales_Forecasting_Model_Decay_Simulation.utils import data_utils
+from Store_Sales_Forecasting_Model_Decay_Simulation.utils import (
+    data_utils,
+    visualization_utils,
+)
 
 
 @asset(io_manager_key="local_io_manager")
