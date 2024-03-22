@@ -1,18 +1,33 @@
 from typing import Optional, Type
 
 import pandas as pd
-from dagster import Definitions, EnvVar
-from dagster_snowflake import SnowflakeIOManager, SnowflakeResource
+from dagster import Definitions, EnvVar, FilesystemIOManager
 from dagster_snowflake_pandas import SnowflakePandasTypeHandler
 from dagster_snowflake_pyspark import SnowflakePySparkTypeHandler
+from dagster_snowflake import SnowflakeIOManager, SnowflakeResource
 
-from .assets import core_assets, forecasting_assets
-from .schedules import update_frequency
+from . import assets, schedules, sensors
 
-from .assets.forecasting.forecasting import store_sales_sensor
+all_assets = [
+    *assets.partitioned_assets_,
+    *assets.static_assets_,
+    *assets.segmented_assets_,
+    *assets.forecasting_assets,
+    *assets.reports_assets,
+]
+all_sensors = [
+    sensors.store_sales_sensor,
+    sensors.combined_data_sensor,
+    sensors.report_sensor,
+    sensors.train_model_sensor,
+    sensors.train_initial_model_step_1_sensor,
+    sensors.current_sensor,
+]
 
-all_assets = [*core_assets, *forecasting_assets]
-all_sensors = [store_sales_sensor]
+all_schedules = [
+    schedules.update_frequency,
+    schedules.rush_update_frequency,
+]
 
 
 class SnowflakePandasPySparkIOManager(SnowflakeIOManager):
@@ -43,6 +58,8 @@ io_manager = SnowflakePandasPySparkIOManager(
     schema="STORE_SALES_SCHEMA",
 )
 
+local_io_manager = FilesystemIOManager(base_dir="data/dagster_data")
+
 snowflake_resource = SnowflakeResource(
     account=EnvVar("SNOWFLAKE_ACCOUNT"),
     user=EnvVar("SNOWFLAKE_USER"),
@@ -55,7 +72,11 @@ snowflake_resource = SnowflakeResource(
 
 defs = Definitions(
     assets=all_assets,
-    resources={"io_manager": io_manager, "snowflake_resource": snowflake_resource},
-    schedules=[update_frequency],
+    resources={
+        "io_manager": io_manager,
+        "local_io_manager": local_io_manager,
+        "snowflake_resource": snowflake_resource,
+    },
+    schedules=all_schedules,
     sensors=all_sensors,
 )
