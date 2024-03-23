@@ -21,6 +21,7 @@ all_sensors = [
     sensors.train_model_sensor,
     sensors.train_initial_model_step_1_sensor,
     sensors.current_sensor,
+    sensors.retrain_sensor,
 ]
 
 all_schedules = [

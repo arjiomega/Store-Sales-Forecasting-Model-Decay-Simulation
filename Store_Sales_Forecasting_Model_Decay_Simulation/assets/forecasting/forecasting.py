@@ -11,7 +11,6 @@ from dagster import (
 )
 from evidently import ColumnMapping
 from evidently.report import Report
-from evidently.metrics import RegressionQualityMetric
 from evidently.metric_preset import DataDriftPreset, TargetDriftPreset, RegressionPreset
 
 from Store_Sales_Forecasting_Model_Decay_Simulation.utils import (
@@ -115,6 +114,65 @@ def smape(a, f) -> float:
     return 1 / len(a) * np.sum(2 * np.abs(f - a) / (np.abs(a) + np.abs(f)) * 100)
 
 
+def data_drift_report(
+    reference: pd.DataFrame,
+    current: pd.DataFrame,
+    column_mapping: ColumnMapping,
+) -> tuple[dict, str]:
+
+    data_drift_report = Report(metrics=[DataDriftPreset()])
+    data_drift_report.run(
+        current_data=current, reference_data=reference, column_mapping=column_mapping
+    )
+    report = data_drift_report.as_dict()
+    drift_detected = (
+        "drift detected"
+        if report["metrics"][0]["result"]["dataset_drift"]
+        else "no drift detected"
+    )
+
+    data_drift_report.save_html(filename="reports/data_drift_report.html")
+
+    return report, drift_detected
+
+
+def regression_report(
+    reference: pd.DataFrame,
+    current: pd.DataFrame,
+    column_mapping: ColumnMapping,
+) -> dict:
+    regression_performance = Report(metrics=[RegressionPreset()])
+    regression_performance.run(
+        current_data=current, reference_data=reference, column_mapping=column_mapping
+    )
+    regression_report = regression_performance.as_dict()
+    regression_performance.save_html(filename="reports/regression_performance.html")
+
+    return regression_report
+
+
+def target_drift_report(
+    reference: pd.DataFrame,
+    current: pd.DataFrame,
+    column_mapping: ColumnMapping,
+) -> tuple[dict, str]:
+    regression_performance = Report(metrics=[TargetDriftPreset()])
+    regression_performance.run(
+        current_data=current, reference_data=reference, column_mapping=column_mapping
+    )
+    target_drift_report = regression_performance.as_dict()
+
+    drift_detected = (
+        "drift detected"
+        if target_drift_report["metrics"][0]["result"]["drift_detected"]
+        else "no drift detected"
+    )
+
+    regression_performance.save_html(filename="reports/target_drift_report.html")
+
+    return target_drift_report, drift_detected
+
+
 @asset(io_manager_key="local_io_manager")
 def reports(
     context: AssetExecutionContext,
@@ -127,7 +185,6 @@ def reports(
     current.set_index("date", inplace=True)
 
     current["prediction"] = train_model.predict(current.drop(columns=["sales"]))
-
     reference["prediction"] = train_model.predict(reference.drop(columns=["sales"]))
 
     column_mapping = ColumnMapping()
@@ -135,11 +192,12 @@ def reports(
     column_mapping.target = "sales"
     column_mapping.prediction = "prediction"
 
-    regression_performance = Report(
-        metrics=[RegressionPreset()], options={"render": {"raw_data": True}}
+    data_drift_report_, data_drift_detected = data_drift_report(
+        reference, current, column_mapping
     )
-    regression_performance.run(
-        current_data=current, reference_data=reference, column_mapping=column_mapping
+    regression_report_ = regression_report(reference, current, column_mapping)
+    target_drift_report_, target_drift_detected = target_drift_report(
+        reference, current, column_mapping
     )
 
     reference_smape = smape(reference["sales"], reference["prediction"])
@@ -168,7 +226,11 @@ def reports(
         "max_date_current": MetadataValue.md(f"{max_date_current}"),
         "reference smape": MetadataValue.md(f"{reference_smape}"),
         "current smape": MetadataValue.md(f"{current_smape}"),
-        "test html": MetadataValue.url(regression_performance.json()),
+        "data drift detected": MetadataValue.md(f"{data_drift_detected}"),
+        "target drift detected": MetadataValue.md(f"{target_drift_detected}"),
+        "data drift report": MetadataValue.md(f"{data_drift_report_}"),
+        "target drift report": MetadataValue.md(f"{target_drift_report_}"),
+        "regression report": MetadataValue.md(f"{regression_report_}"),
     }
 
     context.add_output_metadata(metadata=metadata)

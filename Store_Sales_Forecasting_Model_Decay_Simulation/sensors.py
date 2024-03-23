@@ -226,3 +226,40 @@ def current_sensor(context: MultiAssetSensorEvaluationContext):
     if asset_status["store_nbr_1_family_grocery_I"] and new_data_available:
         context.advance_all_cursors()
         return RunRequest()
+
+
+@multi_asset_sensor(
+    monitored_assets=[
+        AssetKey("reports"),
+        AssetKey("store_nbr_1_family_grocery_I"),
+    ],
+    request_assets=[
+        AssetKey("reference"),
+    ],
+)
+def retrain_sensor(context: MultiAssetSensorEvaluationContext):
+
+    asset_events = context.latest_materialization_records_by_key()
+
+    reports_materialization = context.instance.get_latest_materialization_event(
+        AssetKey("reports")
+    )
+
+    reports_metadata = reports_materialization.asset_materialization
+
+    target_drift = (
+        True
+        if reports_metadata.metadata["target drift detected"].value == "drift detected"
+        else False
+    )
+    data_drift = (
+        True
+        if reports_metadata.metadata["data drift detected"].value == "drift detected"
+        else False
+    )
+
+    if all(asset_events.values()) and (target_drift or data_drift):
+        context.advance_all_cursors()
+        return RunRequest()
+    else:
+        return SkipReason(f"No data or target drift detected.")

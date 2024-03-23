@@ -11,6 +11,12 @@ __pycache__/
 .nux/
 storage/
 
+# Evidently
+workspace
+
+# evidently reports
+reports/*.html
+
 # Distribution / packaging
 .Python
 build/
